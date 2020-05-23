@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>web安全相关-HTTP头部 | Jim Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Security - Elephant in the room，指显而易见而又被忽略的事实。用这个短语形容web安全，不能更生动形象。最近项目涉及到一些web安全的东西，就来总结一下相关的HTTP安全头部。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="web安全相关-HTTP头部">
+<meta property="og:url" content="http://b.anyhub.cn/2016/05/09/web-safe-http-header/index.html">
+<meta property="og:site_name" content="Jim Home">
+<meta property="og:description" content="Security - Elephant in the room，指显而易见而又被忽略的事实。用这个短语形容web安全，不能更生动形象。最近项目涉及到一些web安全的东西，就来总结一下相关的HTTP安全头部。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-05-09T13:02:49.000Z">
+<meta property="article:modified_time" content="2020-05-23T06:12:16.000Z">
+<meta property="article:author" content="leejimqiu">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="HTTP">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Jim Home" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Jim Home</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/projects">项目</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://b.anyhub.cn"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-web-safe-http-header" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/05/09/web-safe-http-header/" class="article-date">
+  <time datetime="2016-05-09T13:02:49.000Z" itemprop="datePublished">2016-05-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      web安全相关-HTTP头部
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Security - Elephant in the room，指显而易见而又被忽略的事实。用这个短语形容<code>web</code>安全，不能更生动形象。最近项目涉及到一些<code>web</code>安全的东西，就来总结一下相关的HTTP安全头部。</p>
+<a id="more"></a>
+
+<h2 id="Content-Security-Policy"><a href="#Content-Security-Policy" class="headerlink" title="Content-Security-Policy"></a><a href="http://content-security-policy.com/" target="_blank" rel="noopener">Content-Security-Policy</a></h2><p><strong>作用</strong>：防止的内容注入（减缓了<code>XSS</code>攻击，恶意<code>iframe</code>注入）</p>
+<p><strong>不足</strong>：目前只支持现代浏览器，对浏览器有要求，要求如下：</p>
+<table>
+<thead>
+<tr>
+<th>header</th>
+<th>Chrome</th>
+<th>FireFox</th>
+<th>Safari</th>
+<th>Internet Explorer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Content-Security-Policy <code>CSP Level 2</code></td>
+<td>40+ Full January 2015</td>
+<td>31+ PartialJuly 2014</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Content-Security-Policy <code>CSP 1.0</code></td>
+<td>25+</td>
+<td>23+</td>
+<td>7+</td>
+<td>Edge 12 build 10240+</td>
+</tr>
+</tbody></table>
+<p><strong>分析</strong>：</p>
+<ol>
+<li><p>由于HTML的<code>img</code>、<code>script</code>、<code>css</code>是可以跨域的，这就导致了XSS缺陷。CSP可以设置<code>default-src</code>、<code>script-src</code>、<code>img-src</code>等等来限制HTML资源的加载</p>
+</li>
+<li><p><code>script-src</code>可以设置两个特殊的值（<code>unsafe-inline</code>、<code>unsafe-eval</code>）。<code>unsafe-inline</code>代表不能执行内<code>script</code>，这就对<code>XSS</code>增添了一次防御，不过这样对开发人员有一定的规范。<code>unsafe-eval</code>则是代表不能执行<code>eval</code>方法(这是一个比较BUG级的函数，它会把传入的参数全部当做<code>JS</code>代码解释并且执行)</p>
+</li>
+<li><p><code>sandbox</code>沙盒则适用于同源策略的<code>webapp</code>，可以限制新标签页面打开等等。</p>
+</li>
+<li><p><code>report-uri</code>这个属性可以设置一个<code>URL</code>，然后会把<code>CSP</code>的失败信息<code>POST</code>到这个<code>URL</code>。我们则可以记录这个有用的信息用来安全性分析。</p>
+</li>
+</ol>
+<h2 id="Strict-Transport-Security"><a href="#Strict-Transport-Security" class="headerlink" title="Strict Transport Security"></a><a href="https://developer.mozilla.org/en-US/docs/Web/Security/HTTP_strict_transport_security" target="_blank" rel="noopener">Strict Transport Security</a></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Strict-Transport-Security: max-age&#x3D;expireTime [; includeSubDomains] [; preload]</span><br></pre></td></tr></table></figure>
+<p><strong>作用</strong>：告诉浏览器接下来的一定时间内（自己设置）只能用<code>HTTPS</code>访问。这个只会让用<code>HTTPS</code>访问的用户继续使用<code>HTTPS</code>。而HTTP访问的则无效。</p>
+<p><strong>分析</strong>：研究了一下alipay.com的做法。用户输入的时候，绝大部分都不会手动输入<code>HTTPS</code>。所以第一次访问的时候，都是以<code>HTTP</code>访问，这时负载服务器就应该返回一个<code>301</code>跳转给客户端，让客户端跳转到<code>HTTPS</code>的服务下。由于有了<code>HSTS</code>的头部，下次用户再次以<code>HTTP</code>访问的时候，浏览器会自己做<code>307</code>跳转到<code>HTTPS</code>请求。</p>
+<p><strong>实际开发遇到的问题</strong>：</p>
+<p>由于公司使用阿里云的<code>SLB</code>负载均衡，无法实现<code>301</code>跳转，于是使用了<code>node</code>再开启一个服务，用于接受来自<code>SLB</code>80端口的请求，然后返回一个<code>301</code>状态码并在<code>Location</code>头部加上<code>HTTPS</code>的地址。真正的<code>node</code>服务只接受<code>SLB</code>443接口的请求。</p>
+<h2 id="X-Content-Type-Options"><a href="#X-Content-Type-Options" class="headerlink" title="X-Content-Type-Options"></a><a href="https://msdn.microsoft.com/en-us/library/gg622941.aspx" target="_blank" rel="noopener">X-Content-Type-Options</a></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">X-Content-Type-Options: nosniff</span><br></pre></td></tr></table></figure>
+<p><strong>作用</strong>：互联网上的资源有各种类型，通常浏览器会根据响应头的<code>Content-Type</code>字段来分辨它们的类型。例如：<code>text/html</code>代表html文档，<code>image/png</code>是PNG图片，<code>text/css</code>是CSS样式文档。然而，有些资源的<code>Content-Type</code>是错的或者未定义。这时，某些浏览器会启用<code>MIME-sniffing</code>来猜测该资源的类型，解析内容并执行。</p>
+<p>例如，我们即使给一个<code>html</code>文档指定<code>Content-Type</code>为<code>text/plain</code>，在<code>IE8</code>中这个文档依然会被当做<code>html</code>来解析。利用浏览器的这个特性，攻击者甚至可以让原本应该解析为图片的请求被解析为<code>JavaScript</code>。</p>
+<p><strong>实际开发遇到的问题</strong>：</p>
+<p>在IE下图片验证码不能显示。<br>分析后得出，是因为图片验证码返回的时候没有返回<code>content-type</code>这个文件类型的头部。所以<code>IE</code>不能识别文件类型。<br>解决办法是修改图片验证码插件在返回图片是增加头部<code>content-type</code>：<code>image/jpg</code></p>
+<h2 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h2><ul>
+<li><p><a href="https://blog.risingstack.com/node-js-security-checklist/" target="_blank" rel="noopener">Node.js Security Checklist</a></p>
+</li>
+<li><p><a href="http://expressjs.com/en/advanced/best-practice-security.html" target="_blank" rel="noopener">Express.js官方的安全性最佳实践指导</a></p>
+</li>
+<li><p><a href="http://www.cnblogs.com/bangerlee/archive/2013/04/06/3002142.html" target="_blank" rel="noopener">xss攻击入门</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://b.anyhub.cn/2016/05/09/web-safe-http-header/" data-id="ckaj8yrfa001e89qq6488h41e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">网络安全</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/05/h5-history-api/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          操作浏览器历史 HTML5 History API
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/17/css-background/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">CSS background</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Array/" rel="tag">Array</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/BFC/" rel="tag">BFC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Buffers/" rel="tag">Buffers</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/" rel="tag">CSS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/" rel="tag">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTML/" rel="tag">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/History-API/" rel="tag">History API</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDB/" rel="tag">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node-js/" rel="tag">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Session/" rel="tag">Session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storage/" rel="tag">Storage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookie/" rel="tag">cookie</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/" rel="tag">gulp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/underscore-js/" rel="tag">underscore.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue-js/" rel="tag">vue.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%8B%E4%BB%B6/" rel="tag">事件</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" rel="tag">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">小程序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" rel="tag">模块化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" rel="tag">盒模型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" rel="tag">编码规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">网络安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%AF%E7%94%B1/" rel="tag">路由</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%94%AE%E7%9B%98/" rel="tag">键盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%97%AD%E5%8C%85/" rel="tag">闭包</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Array/" style="font-size: 10px;">Array</a> <a href="/tags/BFC/" style="font-size: 10px;">BFC</a> <a href="/tags/Buffers/" style="font-size: 10px;">Buffers</a> <a href="/tags/CSS/" style="font-size: 15px;">CSS</a> <a href="/tags/ES6/" style="font-size: 10px;">ES6</a> <a href="/tags/HTML/" style="font-size: 10px;">HTML</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/History-API/" style="font-size: 10px;">History API</a> <a href="/tags/JavaScript/" style="font-size: 17.5px;">JavaScript</a> <a href="/tags/MongoDB/" style="font-size: 10px;">MongoDB</a> <a href="/tags/Node-js/" style="font-size: 12.5px;">Node.js</a> <a href="/tags/Session/" style="font-size: 10px;">Session</a> <a href="/tags/Storage/" style="font-size: 10px;">Storage</a> <a href="/tags/cookie/" style="font-size: 10px;">cookie</a> <a href="/tags/gulp/" style="font-size: 10px;">gulp</a> <a href="/tags/underscore-js/" style="font-size: 15px;">underscore.js</a> <a href="/tags/vue-js/" style="font-size: 15px;">vue.js</a> <a href="/tags/%E4%BA%8B%E4%BB%B6/" style="font-size: 10px;">事件</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 10px;">内存管理</a> <a href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" style="font-size: 10px;">垃圾回收</a> <a href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" style="font-size: 20px;">小程序</a> <a href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 10px;">模块化</a> <a href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" style="font-size: 10px;">盒模型</a> <a href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" style="font-size: 10px;">编码规范</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%B7%AF%E7%94%B1/" style="font-size: 10px;">路由</a> <a href="/tags/%E9%94%AE%E7%9B%98/" style="font-size: 10px;">键盘</a> <a href="/tags/%E9%97%AD%E5%8C%85/" style="font-size: 10px;">闭包</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/05/16/mini-program/think-about-subscribe/">订阅消息的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/30/mini-program/custom-navigator/">自定义导航栏</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/27/mini-program/update/">自动更新机制</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/12/mini-program/code-style-guide/">编码规范的一些思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/08/mini-program/thinking-about-components/">组件封装的思考</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 leejimqiu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/projects" class="mobile-nav-link">项目</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

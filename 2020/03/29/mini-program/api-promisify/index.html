@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>API Promise化 | Jim Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言众所周知，前端一大坑就是回调函数。 相信很多人是从async&#x2F;await的温柔乡，掉到小程序重新写回调的大坑里的。 由于开发者工具新增了 增强编译 从而原生支持了async\await，避免了我们仍需通过webpack等第三方打包工具实现。因此我们需要做的就是将官方API的 异步调用 方式改成 Promise的方式 即可。 分析与实践大致上可以有两种思路，第一种就是，逐个函数封装： 12345">
+<meta property="og:type" content="article">
+<meta property="og:title" content="API Promise化">
+<meta property="og:url" content="http://b.anyhub.cn/2020/03/29/mini-program/api-promisify/index.html">
+<meta property="og:site_name" content="Jim Home">
+<meta property="og:description" content="前言众所周知，前端一大坑就是回调函数。 相信很多人是从async&#x2F;await的温柔乡，掉到小程序重新写回调的大坑里的。 由于开发者工具新增了 增强编译 从而原生支持了async\await，避免了我们仍需通过webpack等第三方打包工具实现。因此我们需要做的就是将官方API的 异步调用 方式改成 Promise的方式 即可。 分析与实践大致上可以有两种思路，第一种就是，逐个函数封装： 12345">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://b.anyhub.cn/images/promisify-error1.jpg">
+<meta property="og:image" content="http://b.anyhub.cn/images/promisify-console1.jpg">
+<meta property="article:published_time" content="2020-03-28T16:10:35.000Z">
+<meta property="article:modified_time" content="2020-05-23T06:36:46.000Z">
+<meta property="article:author" content="leejimqiu">
+<meta property="article:tag" content="小程序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://b.anyhub.cn/images/promisify-error1.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Jim Home" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Jim Home</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/projects">项目</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://b.anyhub.cn"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-mini-program/api-promisify" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/29/mini-program/api-promisify/" class="article-date">
+  <time datetime="2020-03-28T16:10:35.000Z" itemprop="datePublished">2020-03-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      API Promise化
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>众所周知，前端一大坑就是回调函数。</p>
+<p>相信很多人是从<code>async/await</code>的温柔乡，掉到小程序重新写回调的大坑里的。</p>
+<p>由于开发者工具新增了 <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/codecompile.html" target="_blank" rel="noopener">增强编译</a> 从而原生支持了<code>async\await</code>，避免了我们仍需通过webpack等第三方打包工具实现。因此我们需要做的就是将官方API的 <strong>异步调用</strong> 方式改成 <strong>Promise的方式</strong> 即可。</p>
+<h2 id="分析与实践"><a href="#分析与实践" class="headerlink" title="分析与实践"></a>分析与实践</h2><p>大致上可以有两种思路，第一种就是，逐个函数封装：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> promisify = <span class="function"><span class="params">func</span> =&gt;</span> <span class="function"><span class="params">args</span> =&gt;</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    func(<span class="built_in">Object</span>.assign(args, &#123;</span><br><span class="line">        success: resolve,</span><br><span class="line">        fail: reject,</span><br><span class="line">    &#125;))</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> _login = promisify(wx.login) <span class="comment">// 将wx.login转成Promise形式的方法</span></span><br><span class="line"></span><br><span class="line">_login().then(<span class="function"><span class="params">res</span> =&gt;</span> <span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+
+<p>这种方式比较麻烦，每次调用都需要手动转换。</p>
+<h3 id="劫持WX"><a href="#劫持WX" class="headerlink" title="劫持WX"></a>劫持WX</h3><p>第二种就类似<code>Page</code>封装那样，劫持<code>wx</code>对象，进行全局统一封装。但有一点比较棘手的是，需要分析清楚哪些是函数，哪些函数是异步而不是同步的，一开始我的思路是这样的：</p>
+<ul>
+<li>同步方法是以<code>Sync</code>结尾的</li>
+<li>通过<code>typeof</code>判断是否为函数</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// promisify.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> originalWX = wx</span><br><span class="line"><span class="keyword">let</span> props = <span class="built_in">Object</span>.keys(wx)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> name <span class="keyword">of</span> props) &#123;</span><br><span class="line">    <span class="keyword">let</span> fn = wx[name]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> fn === <span class="string">'function'</span> &amp;&amp; !name.endsWith(<span class="string">'Sync'</span>)) &#123;</span><br><span class="line">        wx[name] = promisify(fn)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>尝试封装之后，发现报错了。因为<code>wx.drawCanvas</code>只有<code>getter</code>没有<code>setter</code>，无法给它赋值。相当于这个方法是<code>readonly</code>。</p>
+<p><img src="/images/promisify-error1.jpg" alt=""></p>
+<p>既然存在没有<code>setter</code>的方法，那么我看有多少方法是有<code>setter</code>的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Object</span>.keys(wx).filter(<span class="function"><span class="params">name</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> descriptor = <span class="built_in">Object</span>.getOwnPropertyDescriptor(wx, name)</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> descriptor.set === <span class="string">'function'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>结果是<code>[]</code>，相当于无法改变<code>wx</code>对象的每个属性值。</p>
+<p><img src="/images/promisify-console1.jpg" alt=""></p>
+<h3 id="复制模式"><a href="#复制模式" class="headerlink" title="复制模式"></a>复制模式</h3><p>虽然<code>wx</code>的属性都是<code>readonly</code>，不能劫持<code>wx</code>，但我发现<code>wx</code>是<code>writable</code>的。</p>
+<p>那么可以采用复制模式，将它的所有异步方法拷贝一份并<code>promisify</code>之后赋值到新对象，最后再将整个对象赋值给<code>wx</code>即可：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> props = <span class="built_in">Object</span>.keys(wx)</span><br><span class="line"><span class="keyword">let</span> jwx = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> name <span class="keyword">of</span> props) &#123;</span><br><span class="line">    <span class="keyword">let</span> fn = wx[name]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> fn === <span class="string">'function'</span> &amp;&amp; !name.endsWith(<span class="string">'Sync'</span>)) &#123;</span><br><span class="line">        jwx[name] = promisify(fn)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        jwx[name] = fn</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">wx = jwx</span><br></pre></td></tr></table></figure>
+
+<p>这种方式虽可行，但是挺冗余的，因为将很多可能没用上的方法也进行了<code>promisify</code>。</p>
+<h3 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h3><p>熟悉ES新特性的读者应该知道<code>Proxy</code>。</p>
+<p>它可以用来定义对象的自定义行为，顾名思义，就是给对象挂上<code>Proxy</code>之后，对这个属性的任何行为都可以被代理。</p>
+<p>那么我们就可以给<code>wx</code>挂上代理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> originalWX = wx</span><br><span class="line">wx = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">    <span class="keyword">get</span>(target, name) &#123;</span><br><span class="line">        <span class="keyword">if</span> (name <span class="keyword">in</span> originalWX ) &#123;</span><br><span class="line">            <span class="keyword">let</span> fn = originalWX[name]</span><br><span class="line">            <span class="keyword">let</span> isSyncFunc = name.endsWith(<span class="string">'Sync'</span>) <span class="comment">// 同步函数 </span></span><br><span class="line">            <span class="keyword">let</span> isNotFunc = <span class="keyword">typeof</span> fn !== <span class="string">'function'</span> <span class="comment">// 非函数</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (isSyncFunc || isNotFunc) <span class="keyword">return</span> fn</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> promisify(fn)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>代理的方式虽解决了复制模式的冗余问题，但是仍有一个问题待解决：异步方法的判断。</p>
+<p>在实践中，我发现并不是所有同步方法都是以<code>Sync</code>结尾的。比如：<code>wx.getMenuButtonBoundingClientRect</code>。</p>
+<p>因此打算手动维护一个同步方法列表，将这项方法过滤掉：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> syncFuncList = [<span class="string">'getMenuButtonBoundingClientRect'</span>]</span><br><span class="line"><span class="comment">// name为函数名</span></span><br><span class="line"><span class="keyword">let</span> isSync = name.endsWith(<span class="string">'Sync'</span>) || syncFuncList.includes(name)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h2><p>考虑到要兼容已上线的小程序，若匆忙替换<code>wx</code>，必会导致全局报错，因此可以如下处理：</p>
+<p>当用户调用API时，如果传入了<code>success</code>、<code>fail</code>、<code>complete</code>等回调方法的话，则仍继续使用回调的方式继续执行。那么<code>promisify</code>可以如下优化：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> originalWX = wx</span><br><span class="line"><span class="keyword">let</span> hasCallback = <span class="function"><span class="params">obj</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> cbs = [<span class="string">'success'</span>, <span class="string">'fail'</span>, <span class="string">'complete'</span>]</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Object</span>.keys(obj).some(<span class="function"><span class="params">k</span> =&gt;</span> cbs.includes(k))</span><br><span class="line">&#125;</span><br><span class="line">wx = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">    <span class="keyword">get</span>(target, name) &#123;</span><br><span class="line">        <span class="keyword">if</span> (name <span class="keyword">in</span> originalWX ) &#123;</span><br><span class="line">            <span class="keyword">let</span> fn = originalWX[name]</span><br><span class="line">            <span class="keyword">let</span> isSyncFunc = name.endsWith(<span class="string">'Sync'</span>) <span class="comment">// 同步函数 </span></span><br><span class="line">            <span class="keyword">let</span> isNotFunc = <span class="keyword">typeof</span> fn !== <span class="string">'function'</span> <span class="comment">// 非函数</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (isSyncFunc || isNotFunc) <span class="keyword">return</span> fn</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="function">(<span class="params">obj</span>) =&gt;</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (!obj) <span class="keyword">return</span> fn()</span><br><span class="line">                <span class="keyword">if</span> (hasCallback(obj)) <span class="keyword">return</span> fn(obj)</span><br><span class="line">                <span class="keyword">return</span> promisify(fn)(obj)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>由于本文的前提是开启 <strong>增强编译</strong>，而该模式下也新增支持<code>Array.prototype.includes</code>，因此可以放心使用该ES7的新特性。</p>
+</blockquote>
+<h2 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h2><p>由于发现了微信官方也提供了一个 <a href="https://developers.weixin.qq.com/miniprogram/dev/extended/utils/api-promise.html" target="_blank" rel="noopener">API Promise化</a> 的工具类库，因此增加了本章节。</p>
+<p>通过阅读源代码，发现官方的工具类库提供两个方法：<code>promisify</code> 和 <code>promisifyAll</code></p>
+<p>其中<code>promisify</code>与前文的同名方法是几乎一致的。而<code>promisifyAll</code>则是接收两个参数，第一个是被封装的对象，第二个则是封装之后的对象，如下使用将和前文我提到的封装方式类似：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; promisifyAll &#125; <span class="keyword">from</span> <span class="string">'miniprogram-api-promise'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> jwx = &#123;&#125;</span><br><span class="line"></span><br><span class="line">promisifyAll(wx, jwx)</span><br><span class="line"></span><br><span class="line">wx = jwx</span><br></pre></td></tr></table></figure>
+
+<p>另外还有一点需要提到的是，官方这个工具类库，判断是否为异步函数的方式是维护了一个异步方法列表，会存在遗漏新API的可能。</p>
+<p>相当于我的做法是黑名单机制，而官方采用了白名单机制。</p>
+<blockquote>
+<p>最后再提醒下，开发者工具记得打开 <strong>增强编译</strong></p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://b.anyhub.cn/2020/03/29/mini-program/api-promisify/" data-id="ckaj94jfo000eghqq2hprhj3n" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">小程序</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/03/30/mini-program/global-data-manage/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          全局变量的管理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/03/28/mini-program/custom-tabbar/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">自定义tabbar</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Array/" rel="tag">Array</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/BFC/" rel="tag">BFC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Buffers/" rel="tag">Buffers</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/" rel="tag">CSS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/" rel="tag">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTML/" rel="tag">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/History-API/" rel="tag">History API</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDB/" rel="tag">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node-js/" rel="tag">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Session/" rel="tag">Session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storage/" rel="tag">Storage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookie/" rel="tag">cookie</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/" rel="tag">gulp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/underscore-js/" rel="tag">underscore.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue-js/" rel="tag">vue.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%8B%E4%BB%B6/" rel="tag">事件</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" rel="tag">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">小程序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" rel="tag">模块化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" rel="tag">盒模型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" rel="tag">编码规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">网络安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%AF%E7%94%B1/" rel="tag">路由</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%94%AE%E7%9B%98/" rel="tag">键盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%97%AD%E5%8C%85/" rel="tag">闭包</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Array/" style="font-size: 10px;">Array</a> <a href="/tags/BFC/" style="font-size: 10px;">BFC</a> <a href="/tags/Buffers/" style="font-size: 10px;">Buffers</a> <a href="/tags/CSS/" style="font-size: 15px;">CSS</a> <a href="/tags/ES6/" style="font-size: 10px;">ES6</a> <a href="/tags/HTML/" style="font-size: 10px;">HTML</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/History-API/" style="font-size: 10px;">History API</a> <a href="/tags/JavaScript/" style="font-size: 17.5px;">JavaScript</a> <a href="/tags/MongoDB/" style="font-size: 10px;">MongoDB</a> <a href="/tags/Node-js/" style="font-size: 12.5px;">Node.js</a> <a href="/tags/Session/" style="font-size: 10px;">Session</a> <a href="/tags/Storage/" style="font-size: 10px;">Storage</a> <a href="/tags/cookie/" style="font-size: 10px;">cookie</a> <a href="/tags/gulp/" style="font-size: 10px;">gulp</a> <a href="/tags/underscore-js/" style="font-size: 15px;">underscore.js</a> <a href="/tags/vue-js/" style="font-size: 15px;">vue.js</a> <a href="/tags/%E4%BA%8B%E4%BB%B6/" style="font-size: 10px;">事件</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 10px;">内存管理</a> <a href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" style="font-size: 10px;">垃圾回收</a> <a href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" style="font-size: 20px;">小程序</a> <a href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 10px;">模块化</a> <a href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" style="font-size: 10px;">盒模型</a> <a href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" style="font-size: 10px;">编码规范</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%B7%AF%E7%94%B1/" style="font-size: 10px;">路由</a> <a href="/tags/%E9%94%AE%E7%9B%98/" style="font-size: 10px;">键盘</a> <a href="/tags/%E9%97%AD%E5%8C%85/" style="font-size: 10px;">闭包</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/05/16/mini-program/think-about-subscribe/">订阅消息的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/30/mini-program/custom-navigator/">自定义导航栏</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/27/mini-program/update/">自动更新机制</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/12/mini-program/code-style-guide/">编码规范的一些思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/08/mini-program/thinking-about-components/">组件封装的思考</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 leejimqiu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/projects" class="mobile-nav-link">项目</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

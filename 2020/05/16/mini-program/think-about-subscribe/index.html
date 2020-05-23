@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>订阅消息的思考 | Jim Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言小程序的早期定位是“即用即走”或者说是“用完即走”。但小程序的运营者却不是这么想的，希望用户尽可能的停留在小程序上，或者“多回来看看”，俗称“拉回流”。让用户回流的关键手段就是 订阅消息，通过点击订阅消息，可直接回到小程序。 背景早期小程序提供的是 模板消息，用户每次点击或者完成支付，都会生成一个formId或者paypay_id，开发者可以通过这个formId给用户发送一次模板消息。 因此，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="订阅消息的思考">
+<meta property="og:url" content="http://b.anyhub.cn/2020/05/16/mini-program/think-about-subscribe/index.html">
+<meta property="og:site_name" content="Jim Home">
+<meta property="og:description" content="前言小程序的早期定位是“即用即走”或者说是“用完即走”。但小程序的运营者却不是这么想的，希望用户尽可能的停留在小程序上，或者“多回来看看”，俗称“拉回流”。让用户回流的关键手段就是 订阅消息，通过点击订阅消息，可直接回到小程序。 背景早期小程序提供的是 模板消息，用户每次点击或者完成支付，都会生成一个formId或者paypay_id，开发者可以通过这个formId给用户发送一次模板消息。 因此，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://b.anyhub.cn/images/subscribe/request-subscribe-message.jpg">
+<meta property="og:image" content="http://b.anyhub.cn/images/subscribe/WechatIMG198.jpg">
+<meta property="og:image" content="http://b.anyhub.cn/images/subscribe/WechatIMG199.jpg">
+<meta property="article:published_time" content="2020-05-16T06:57:02.000Z">
+<meta property="article:modified_time" content="2020-05-23T06:40:26.000Z">
+<meta property="article:author" content="leejimqiu">
+<meta property="article:tag" content="小程序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://b.anyhub.cn/images/subscribe/request-subscribe-message.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Jim Home" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Jim Home</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/projects">项目</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://b.anyhub.cn"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-mini-program/think-about-subscribe" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/16/mini-program/think-about-subscribe/" class="article-date">
+  <time datetime="2020-05-16T06:57:02.000Z" itemprop="datePublished">2020-05-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      订阅消息的思考
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>小程序的早期定位是“即用即走”或者说是“用完即走”。<br>但小程序的运营者却不是这么想的，希望用户尽可能的停留在小程序上，或者“多回来看看”，俗称“拉回流”。<br>让用户回流的关键手段就是 <strong>订阅消息</strong>，通过点击订阅消息，可直接回到小程序。</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>早期小程序提供的是 <strong>模板消息</strong>，用户每次点击或者完成支付，都会生成一个<code>formId</code>或者<code>paypay_id</code>，开发者可以通过这个<code>formId</code>给用户发送一次模板消息。</p>
+<p>因此，开发者的常规做法：尽可能地在每个按钮上都封装<code>form</code>，用以收集<code>formId</code>；收集的<code>formId</code>并不会使用，而是将它们存到数据库里，在需要拉回流的时候，通过这些<code>formId</code>发送模板消息。</p>
+<p>这样会存在几个问题：</p>
+<ul>
+<li>用户会被莫名的骚扰（因为<code>formId</code>有7天的有效期）</li>
+<li>用户收到的模板消息是无预期的（因为<code>formId</code>可以发任意的模板消息）</li>
+<li>开发者在每个页面每个可点击区域都封装了<code>form</code>，导致代码混乱</li>
+</ul>
+<p>为了解决以上问题，小程序团队就采用了 <strong>订阅消息</strong> 来替换 <strong>模板消息</strong>。</p>
+<blockquote>
+<p>小程序模板消息接口于2020年1月10日下线</p>
+</blockquote>
+<h2 id="订阅消息的优势"><a href="#订阅消息的优势" class="headerlink" title="订阅消息的优势"></a>订阅消息的优势</h2><p><strong>订阅消息</strong> 与 <strong>模板消息</strong> 相比较，明显的优势：用户对自己将收到的模板消息类型有一定的预期，如：</p>
+<p><img src="/images/subscribe/request-subscribe-message.jpg" alt=""></p>
+<p>另外，<strong>对订阅消息的发送时限不做限制</strong>，即可以在任意时间给用户发送一条模板消息，而不像以前的<code>formId</code>有7天的有效期。</p>
+<p>从开发者的角度看：订阅消息是使用接口调用(<a href="https://developers.weixin.qq.com/miniprogram/dev/api/open-api/subscribe-message/wx.requestSubscribeMessage.html" target="_blank" rel="noopener">wx.requestSubscribeMessage</a>)，不再是以前那样，一定要用<code>Button</code>。<strong>对于代码维护和开发效率来说，都是利好的</strong>。</p>
+<p>从代码维护上讲，开发者不用再层层嵌套<code>form</code>了，简化了许多代码；另外，以前模板消息是通过<code>Button</code>封装的，拜托了这层束缚之后，就不用再重置<code>Button</code>的样式了，对于开发效率也是有一定的帮助。</p>
+<h3 id="模板消息"><a href="#模板消息" class="headerlink" title="模板消息"></a>模板消息</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">bindsubmit</span>=<span class="string">"addFormId"</span> <span class="attr">report-submit</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">"invite-btn"</span> <span class="attr">form-type</span>=<span class="string">"submit"</span>&gt;</span></span><br><span class="line">        邀请好友</span><br><span class="line">    <span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Page(&#123;</span><br><span class="line">    data: &#123;&#125;,</span><br><span class="line">    addFormId(e) &#123;</span><br><span class="line">        <span class="keyword">let</span> &#123; formId &#125; = e.detail;</span><br><span class="line">        <span class="comment">// save formId</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="订阅消息"><a href="#订阅消息" class="headerlink" title="订阅消息"></a>订阅消息</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">view</span> <span class="attr">class</span>=<span class="string">"invite-btn"</span> <span class="attr">bindtap</span>=<span class="string">"handleInvite"</span>&gt;</span>邀请好友<span class="tag">&lt;/<span class="name">view</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Page(&#123;</span><br><span class="line">    handleInvite() &#123;</span><br><span class="line">        wx.requestSubscribeMessage(&#123;</span><br><span class="line">            tmplIds: [<span class="string">''</span>] <span class="comment">// 订阅的模板ID</span></span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>但是，订阅消息仍有个小程序通病，有一定的兼容性，需要基础库2.4.4以上才能使用。这也就意味着，2020年1月10日模板消息下线之后，你没法招回停留在基础库2.4.4以下的用户了。</p>
+</blockquote>
+<h2 id="订阅消息的类型"><a href="#订阅消息的类型" class="headerlink" title="订阅消息的类型"></a>订阅消息的类型</h2><p>以往的模板消息，每次发送消息需要消耗一个<code>formId</code>，而<code>formId</code>有7天的有效期，因此小程序无法召回7天以前的活跃用户。</p>
+<p>而订阅消息则提供了两种类型：</p>
+<ul>
+<li>一次性订阅</li>
+<li>长期订阅</li>
+</ul>
+<p>其中，一次性订阅与以往的模板消息类似，是一次性的，唯一的差异是订阅消息没有限时；而长期订阅则是召回的利器，用户只要订阅过一次，小程序将获得给该用户发送多次消息的能力。</p>
+<p>不过，目前长期性订阅消息仅向政务民生、医疗、交通、金融、教育等线下公共服务开放。而且个人主体的小程序没有权限申请。</p>
+<h2 id="开发的差异"><a href="#开发的差异" class="headerlink" title="开发的差异"></a>开发的差异</h2><h3 id="小程序端"><a href="#小程序端" class="headerlink" title="小程序端"></a>小程序端</h3><p>以往的模板消息方式，需要前端将每次收集到的<code>formId</code>，上传至后端保存起来。现在，需要做的是，记录一下哪个用户订阅了哪些模板即可，至于订阅的次数，也是需要开发者自行保存的。</p>
+<p>另外每次发起消息订阅，都会有弹窗出现：</p>
+<p><img src="/images/subscribe/WechatIMG198.jpg" alt=""></p>
+<p>用户可以勾选“总是保持以上选择，不再询问”，这样下次点击时，就直接授权订阅。</p>
+<p>若此后希望小程序重新出现弹框，则是没有办法的。只能在设置页里取消单个订阅消息，或者关闭接收所有订阅消息：</p>
+<p><img src="/images/subscribe/WechatIMG199.jpg" alt=""></p>
+<p>其实就等于将这些设置转移到更深的路径上，但还是保留了用户取消订阅的权利。</p>
+<p>如果用户关闭接收所有订阅消息，那么调用<code>wx.requestSubscribeMessage</code>时，会触发<code>fail</code>，并返回如下信息：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    errCode: <span class="number">20004</span>,</span><br><span class="line">    errMsg: <span class="string">'The main switch is switched off'</span>,</span><br><span class="line">    <span class="comment">// 用户关闭了主开关，无法进行订阅</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>订阅消息是模板消息的进阶产品，对于用户、开发者更友好，但对于小程序的运营者来说，反而并没有更大的帮助。毕竟以往<code>formId</code>的方式，可以用来发送任意模板消息，现在只能“特定订阅特定使用”。</p>
+<p>因此，更多的小程序运营者会讲小程序的用户引导到公众号，这样才能更大可能地接触到用户，毕竟公众号的消息推送更不受限制。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://b.anyhub.cn/2020/05/16/mini-program/think-about-subscribe/" data-id="ckaj94jk3000pghqqh6hycna5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">小程序</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/04/30/mini-program/custom-navigator/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">自定义导航栏</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Array/" rel="tag">Array</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/BFC/" rel="tag">BFC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Buffers/" rel="tag">Buffers</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSS/" rel="tag">CSS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/" rel="tag">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTML/" rel="tag">HTML</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/" rel="tag">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/History-API/" rel="tag">History API</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MongoDB/" rel="tag">MongoDB</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node-js/" rel="tag">Node.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Session/" rel="tag">Session</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Storage/" rel="tag">Storage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cookie/" rel="tag">cookie</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/" rel="tag">gulp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/underscore-js/" rel="tag">underscore.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue-js/" rel="tag">vue.js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%8B%E4%BB%B6/" rel="tag">事件</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="tag">内存管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" rel="tag">垃圾回收</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">小程序</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" rel="tag">模块化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" rel="tag">盒模型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" rel="tag">编码规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag">网络安全</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B7%AF%E7%94%B1/" rel="tag">路由</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%94%AE%E7%9B%98/" rel="tag">键盘</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%97%AD%E5%8C%85/" rel="tag">闭包</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Array/" style="font-size: 10px;">Array</a> <a href="/tags/BFC/" style="font-size: 10px;">BFC</a> <a href="/tags/Buffers/" style="font-size: 10px;">Buffers</a> <a href="/tags/CSS/" style="font-size: 15px;">CSS</a> <a href="/tags/ES6/" style="font-size: 10px;">ES6</a> <a href="/tags/HTML/" style="font-size: 10px;">HTML</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/History-API/" style="font-size: 10px;">History API</a> <a href="/tags/JavaScript/" style="font-size: 17.5px;">JavaScript</a> <a href="/tags/MongoDB/" style="font-size: 10px;">MongoDB</a> <a href="/tags/Node-js/" style="font-size: 12.5px;">Node.js</a> <a href="/tags/Session/" style="font-size: 10px;">Session</a> <a href="/tags/Storage/" style="font-size: 10px;">Storage</a> <a href="/tags/cookie/" style="font-size: 10px;">cookie</a> <a href="/tags/gulp/" style="font-size: 10px;">gulp</a> <a href="/tags/underscore-js/" style="font-size: 15px;">underscore.js</a> <a href="/tags/vue-js/" style="font-size: 15px;">vue.js</a> <a href="/tags/%E4%BA%8B%E4%BB%B6/" style="font-size: 10px;">事件</a> <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" style="font-size: 10px;">内存管理</a> <a href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" style="font-size: 10px;">垃圾回收</a> <a href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/" style="font-size: 20px;">小程序</a> <a href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/" style="font-size: 10px;">模块化</a> <a href="/tags/%E7%9B%92%E6%A8%A1%E5%9E%8B/" style="font-size: 10px;">盒模型</a> <a href="/tags/%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" style="font-size: 10px;">编码规范</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 10px;">网络安全</a> <a href="/tags/%E8%B7%AF%E7%94%B1/" style="font-size: 10px;">路由</a> <a href="/tags/%E9%94%AE%E7%9B%98/" style="font-size: 10px;">键盘</a> <a href="/tags/%E9%97%AD%E5%8C%85/" style="font-size: 10px;">闭包</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/05/16/mini-program/think-about-subscribe/">订阅消息的思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/30/mini-program/custom-navigator/">自定义导航栏</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/27/mini-program/update/">自动更新机制</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/12/mini-program/code-style-guide/">编码规范的一些思考</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/08/mini-program/thinking-about-components/">组件封装的思考</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 leejimqiu<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/projects" class="mobile-nav-link">项目</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
