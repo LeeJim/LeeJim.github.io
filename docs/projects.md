@@ -5,21 +5,25 @@ layout: page
 ---
 
 <script setup>
+import { Icon } from '@iconify/vue';
+
 const data = [
   { 
     title: 'Current Focus', 
     items: [
       { 
         title: 'TDesign MiniProgram',
-        icon: 'fa-brands fa-weixin fa-xl',
+        icon: 'tabler:brand-wechat',
         description: 'A Wechat MiniProgram UI components lib', 
-        badge: 'https://img.shields.io/github/stars/tencent/tdesign-miniprogram?logo=github&logoColor=white&color=%23eee'
+        url: 'https://github.com/Tencent/tdesign-miniprogram',
+        badge: 'https://img.shields.io/github/stars/tencent/tdesign-miniprogram?logo=github&logoColor=white'
       },
       { 
         title: 'TDesign Mobile Vue', 
-        icon: 'fa-brands fa-vuejs fa-xl',
+        icon: 'tabler:brand-vue',
         description: 'A Vue3.x Mobile UI components lib', 
-        badge: 'https://img.shields.io/github/stars/tencent/tdesign-mobile-vue?logo=github&logoColor=white&color=%23eee'
+        url: 'https://github.com/Tencent/tdesign-mobile-vue',
+        badge: 'https://img.shields.io/github/stars/tencent/tdesign-mobile-vue?logo=github&logoColor=white'
       },
     ]
   },
@@ -28,21 +32,24 @@ const data = [
     items: [
       { 
         title: 'wxml-parser', 
-        icon: 'fa-solid fa-code fa-xl',
+        icon: 'tabler:code-off',
         description: '微信小程序 WXML Parser', 
-        badge: 'https://img.shields.io/npm/dw/@leejim/wxml-parser?logo=npm&logoColor=white&color=%23eee'
+        url: 'https://github.com/LeeJim/wxml-parser',
+        badge: 'https://img.shields.io/npm/dw/@leejim/wxml-parser?logo=npm&logoColor=white'
       },
       { 
         title: 'wxml-minifier', 
-        icon: 'fa-solid fa-scissors fa-xl',
+        icon: 'tabler:scissors',
         description: '微信小程序 WXML 压缩工具；官方 CI 依赖', 
-        badge: 'https://img.shields.io/npm/dw/wxml-minifier?logo=npm&logoColor=white&color=%23eee'
+        url: 'https://github.com/LeeJim/wxml-minifier',
+        badge: 'https://img.shields.io/npm/dw/wxml-minifier?logo=npm&logoColor=white'
       },
       { 
         title: 'smapp', 
-        icon: 'fa-solid fa-terminal fa-xl',
-        description: '微信小程序 VSCode 插件；提供日常开发需要的功能', 
-        badge: 'https://img.shields.io/visual-studio-marketplace/d/leejimqiu.smapp?logo=visualstudiocode&color=%23eee'
+        icon: 'tabler:brand-vscode',
+        description: '小程序 VSCode 插件；提供日常开发需要的功能', 
+        url: 'https://marketplace.visualstudio.com/items?itemName=leejimqiu.smapp',
+        badge: 'https://img.shields.io/visual-studio-marketplace/d/leejimqiu.smapp?logo=visualstudiocode'
       },
     ]
   },
@@ -51,18 +58,25 @@ const data = [
     items: [
       { 
         title: 'HowToCookOnMiniprogram', 
-        icon: 'fa-solid fa-book fa-xl',
+        icon: 'tabler:book',
         description: '程序员做饭指南 for 小程序', 
-        badge: 'https://img.shields.io/github/stars/leejim/howToCookOnMiniprogram?logo=github&logoColor=white&color=%23eee'
+        url: 'https://github.com/LeeJim/HowToCookOnMiniprogram',
+        // badge: 'https://img.shields.io/github/stars/leejim/howToCookOnMiniprogram?logo=github&logoColor=white&color=%23eee'
       },
       { 
         title: 'web hunter', 
-        icon: 'fa-solid fa-clover fa-xl',
+        icon: 'tabler:brand-chrome',
+        url: 'http://anyhub.cn/',
         description: '分享实用/有趣/有创意的网站', 
       },
     ]
   }
 ]
+const handleClick = (url) => {
+  if (url) {
+    window.open(url, '_blank')
+  }
+}
 </script>
 
 <h1 class="title">Projects</h1>
@@ -70,9 +84,9 @@ const data = [
 <div v-for="section in data">
 <h3 class="title title--secondray">{{section.title}}</h3>
 <ul class="items">
-  <li v-for="p in section.items" class="item">
+  <li v-for="p in section.items" class="item" @click="handleClick(p.url)">
     <div class="item__left">
-      <i v-if="p.icon" :class="p.icon"></i>
+      <Icon v-if="p.icon" :icon="p.icon" height="32" />
     </div>
     <div class="item__right">
       <div class="item__title">
@@ -136,6 +150,7 @@ a:visited {
   cursor: pointer;
   opacity: 1;
   background-color: #eee;
+  opacity: .6;
 }
 
 .item__left {
@@ -146,7 +161,6 @@ a:visited {
 
 .item__title {
   font-size: 18px;
-  color: #333;
   margin-bottom: 6px;
 }
 

@@ -8,6 +8,7 @@ export default defineConfig({
   description: "get to know leejim better",
   lastUpdated: true,
   themeConfig: {
+    logo: '/images/logo.svg',
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },

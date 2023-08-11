@@ -19,6 +19,10 @@
   "author": "leejimqiu",
   "license": "ISC",
   "devDependencies": {
+    "@iconify/vue": "^4.1.1",
     "vitepress": "^1.0.0-rc.4"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }
